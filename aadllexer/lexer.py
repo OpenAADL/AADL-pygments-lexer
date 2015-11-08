@@ -46,46 +46,9 @@ class AADLLexer(RegexLexer):
         'annex': [
              text_tuple,
              (r'(\s*)({\*\*)(\s+)', bygroups(Whitespace, Punctuation, Whitespace)),
-             (r'(use)(\s+)(types)(\s+)(' + iden_rex+ ')(\s*)(;)(\s+)', bygroups(Keyword.Namespace, Whitespace, Keyword.Namespace, Whitespace, Name.Namespace, Whitespace, Punctuation, Whitespace)),
-             (r'(error)(\s+)(propagations)(\s+)', bygroups (Keyword.Namespace, Whitespace, Keyword.Namespace, Whitespace), 'error-propagations'),
-             (r'(connection)(\s+)(error)(\s+)', bygroups (Keyword.Namespace, Whitespace, Keyword.Namespace, Whitespace), 'connection-error'),
-             (r'(properties)(\s+)', bygroups(Keyword.Namespace, Whitespace), 'property-section'),
-             (r'(error)(\s+)(types)(\s+)', bygroups (Keyword.Namespace, Whitespace, Keyword.Namespace, Whitespace), 'error-types'),
              (r'(\*\*})(\s*)(;)?(\s+)', bygroups(Punctuation, Whitespace, Punctuation, Whitespace), '#pop'),
              (iden_rex, Name.Class),
          ],
-        'connection-error' : [
-        	(r'(' + iden_rex + ')(\s*)(:)(\s*)(error)(\s+)(source)(\s+)(' + iden_rex + ')(\s*)(;)(\s+)' , bygroups(Name.Variable.Instance, Whitespace, Punctuation, Whitespace, Keyword.Pseudo, Whitespace, Keyword.Pseudo, Whitespace, Name.Variable.Class, Whitespace, Punctuation, Whitespace)),
-        	(r'(end)(\s*)(connection)(\s*)(;)(\s+)', bygroups(Keyword.Namespace, Whitespace, Keyword.Namespace, Whitespace, Punctuation, Whitespace), '#pop'),
-        ],
-        'error-types' : [
-        	(r'(' + iden_rex + ')(\s*)(:)(\s*)', bygroups(Name.Attribute, Whitespace, Punctuation, Whitespace), 'error-type-declaration'),#The use of Name.Attribute here is a hack because SAnToS's stylesheet doesn't differentiate between global (which this should be) and class variables, which makes the code much harder to read.
-        	(r'(' + iden_rex + ')(\s+)(renames)(\s+)(type)(\s+)' + class_iden_rex, bygroups(Name.Attribute, Whitespace, Keyword.Pseudo, Whitespace, Keyword.Pseudo, Whitespace, Name.Namespace, Punctuation, Name.Variable.Class), 'error-type-declaration'),
-	         (r'(end)(\s+)(types)(\s*)(;)(\s+)', bygroups(Keyword.Namespace, Whitespace, Keyword.Namespace, Whitespace, Punctuation, Whitespace), '#pop'),
-        	comment_whitespace_tuple,
-        ],
-        'error-type-declaration' : [
-        	(r'(type)(\s+)(extends)(\s+)' + class_iden_rex, bygroups(Keyword.Type, Whitespace, Keyword.Pseudo, Whitespace, Name.Namespace, Punctuation, Name.Variable.Class)),
-        	(r'(type)(\s*)(;)(\s*)', bygroups(Keyword.Type, Whitespace, Punctuation, Whitespace), '#pop'),
-        	terminator_tuple,
-        ],
-        'error-propagations' : [
-        	(r'(' + iden_rex + ')(\s*)(:)(\s*)(not)?(\s+)(out|in)(\s+)(propagation)(\s*)({)', bygroups(Name.Variable.Class, Whitespace, Punctuation, Whitespace, Keyword.Type, Whitespace, Keyword.Type, Whitespace, Keyword.Type, Whitespace, Punctuation), 'error-propagation-list'),
-        	(r'(flows)(\s+)', bygroups(Keyword.Namespace, Whitespace), 'error-propagation-flows'),
-        	(r'(end)(\s+)(propagations)(\s*)(;)(\s+)', bygroups(Keyword.Namespace, Whitespace, Keyword.Namespace, Whitespace, Punctuation, Whitespace), '#pop'),
-        	comment_whitespace_tuple,
-         ],
-         'error-propagation-flows' : [
-        	(r'(' + iden_rex + ')(\s*)(:)(\s*)(error)(\s+)(source|sink|path)(\s+)(' + iden_rex + ')(\s*)({)', bygroups(Name.Variable, Whitespace, Punctuation, Whitespace, Keyword.Type, Whitespace, Keyword.Type, Whitespace, Name.Variable.Class, Whitespace, Punctuation), 'error-propagation-list'), # Exact same syntax as propagation list, so we reuse it here
-        	(r'(\s*)(->)(\s*)(' + iden_rex + ')(\s*)({)', bygroups(Whitespace, Operator, Whitespace, Name.Variable.Class, Whitespace, Punctuation), 'error-propagation-list'),
-        	(r'(end)(\s+)(propagations)(\s*)(;)(\s+)', bygroups(Keyword.Namespace, Whitespace, Keyword.Namespace, Whitespace, Punctuation, Whitespace), '#pop:2'),
-        	comment_whitespace_tuple,
-         ],
-        'error-propagation-list' : [
-            (r'\s*(,)\s*', Punctuation),
-            (r'[a-zA-Z_]\w*', Name.Attribute), #See comment in error-types
-            (r'(})(;)?(\s*)', bygroups(Punctuation, Punctuation, Whitespace), '#pop')
-        ],
         'with-list' : [
             (r'\s*(,)\s*', Punctuation),
             (r'[a-zA-Z_]\w*', Name.Namespace),
@@ -96,11 +59,14 @@ class AADLLexer(RegexLexer):
             (r'(implementation)', Keyword.Declaration),
             (r'(' + iden_rex + r')(;)', bygroups(Name.Class, Punctuation), '#pop'),
             (iden_rex, Name.Class, '#pop'),
+            (r'(extends)', Keyword.Declaration),
+            (r'(' + class_iden_rex + r')(;)', bygroups(Name.Class, Punctuation), '#pop'),
+            (iden_rex, Name.Class, '#pop'),
         ],
         'declaration' : [
             text_tuple,
             (r'(in|out|event|data)', Keyword.Type),
-            (r'(flow|path|port|thread)', Keyword.Type),
+            (r'(flow|path|port|thread|subprogram)', Keyword.Type),
             (class_iden_rex, bygroups(Name.Class, Punctuation, Name.Entity)),
             (r'(' + iden_rex + r')(\s+)(->|<-|<->)(\s+)('+ iden_rex + r')', bygroups(Name.Variable, Whitespace, Operator, Whitespace, Name.Variable)),
             (iden_rex, Name.Function),
@@ -128,7 +94,7 @@ class AADLLexer(RegexLexer):
             (iden_rex, Name.Constant),
         ],
         'applies-to-property-value' : [
-            (r'(\s*)(applies to)(\s+)', bygroups(Whitespace, Keyword, Whitespace), 'applies-to'),
+            (r'(\s*)(applies)(\s+)(to)(\s+)', bygroups(Whitespace, Keyword, Whitespace), 'applies-to'),
             include('property-value'),
         ],
         'property-section-property-value' : [
@@ -169,10 +135,18 @@ class AADLLexer(RegexLexer):
             text_tuple,
             comment_whitespace_tuple,
             (class_iden_rex + r'(\s*)(=>)(\s*)(\[)(\s*)', bygroups(Name.Class, Punctuation, Name.Constant, Whitespace, Operator, Whitespace, Punctuation, Whitespace), 'aggregate-property-constant-list'),
-            (class_iden_rex + r'(\s*)(=>)(\s*)', bygroups(Name.Class, Punctuation, Name.Class, Whitespace, Operator, Whitespace), 'property-section-property-value'),
+            (class_iden_rex + r'(\s*)(=>)(\()(\s*)', bygroups(Name.Class, Punctuation, Name.Class, Whitespace, Operator, Whitespace), 'property-section-property-value'),
             (r'(' + iden_rex + r')(\s*)(=>)(\s*)', bygroups(Name.Class, Whitespace, Operator, Whitespace), 'property-section-property-value'),
             (r'(\*\*})(\s*)(;)', bygroups(Punctuation, Whitespace, Punctuation), '#pop'),
             (r'', Generic.Error, '#pop'),
+        ],
+        'call-section' : [
+            text_tuple,
+            comment_whitespace_tuple,
+            (r'(' + iden_rex + r')(\s*)(:)(\s*)({)(\s*)', bygroups(Name.Class, Whitespace, Punctuation, Whitespace, Punctuation, Whitespace)),
+            (definition_rex, bygroups(Name.Variable, Punctuation), 'declaration'),
+            (r'}', Punctuation),
+            terminator_tuple,
         ],
         'root': [
             (r'(\n\s*|\t)', Whitespace),
@@ -182,6 +156,7 @@ class AADLLexer(RegexLexer):
             with_tuple,
             (r'(annex)(\s+)',  bygroups(Keyword.Namespace, Text), 'annex'),
             (keyword_rex + r'(\s+)', bygroups(Keyword.Type, Text), 'package-declaration'),
+            (r'(calls)(\s+)',bygroups(Keyword.Namespace, Text),'call-section'),
             (r'(subcomponents|connections|features|flows)(\s+)', bygroups(Keyword.Namespace, Whitespace)),
             (definition_rex, bygroups(Name.Variable, Punctuation), 'declaration'),
             (r'(properties)(\s*)', bygroups(Keyword.Namespace, Whitespace), 'property-section'),
