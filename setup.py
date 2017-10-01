@@ -6,7 +6,7 @@ __author__ = 'Jerome Hugues, <hugues.jerome@gmail.com>'
 
 setup (
   name='aadllexer',
-  version='0.1.0',
+  version='0.2.0',
   description=__doc__,
   author=__author__,
   packages=["aadllexer"],
@@ -14,5 +14,7 @@ setup (
   """
   [pygments.lexers]
   aadllexer = aadllexer.lexer:AADLLexer
+  aadlpropertylexer = aadllexer.lexer:AADLPropertyLexer
+  aadlidlexer = aadllexer.lexer:AADLIdLexer
   """,
 )
