@@ -109,12 +109,12 @@ class AADLLexer(RegexLexer):
             (r';', Punctuation, '#pop:2'),
         ],
         'property-value' : [
-            (r'[0-9]+', Number.Integer),
             (r'(true|false)', Keyword.Constant),
             (r'\(', Punctuation),
             (r'\)', Punctuation),
             (r',', Punctuation),
             (r'[0-9]+\.[0-9]*', Number.Float),
+            (r'[0-9]+', Number.Integer),
             (r'(reference)(\s*)(\()(' + iden_rex + ')(\))',
              bygroups(Keyword.Declaration, Whitespace, Punctuation, Name.Variable.Instance, Punctuation)),
             (r'"[^"]*"', Literal.String.Double),
